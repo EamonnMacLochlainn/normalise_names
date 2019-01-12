@@ -56,3 +56,5 @@ results in:
     oshaughnessyhennessy
     johan
     macdowell
+    
+Note: this function does *not* remove patronymics or matronymics ('Mac', 'O', etc.), which you may want to do in order to have siblings listed together.    
