@@ -78,105 +78,139 @@ class Helper
 
     static function normalise_name($name)
     {
+        $resp = [
+            'fname' => null,
+            'lname' => null
+        ];
+
         $name = trim($name);
 
-        $uses_diacritics = (strlen($name) != strlen(utf8_decode($name))); // check for fada's
-
-        $name = str_replace('\'', ' ', $name); // replace apostrophes with spaces
-        $name = str_replace(' - ', '-', $name); // replace spaced hyphens with hyphens
+        $name = str_replace('d\'', 'd', $name); // concatenate Latin abbreviated particle
+        $name = str_replace('\'', ' ', $name); // replace remaining apostrophes with spaces
         $name = preg_replace('!\s+!', ' ', $name); // replace multiple spaces with single spaces
+        $name = str_replace([' -','- '], '-', $name); // replace spaced hyphens with hyphens
+        $name = str_replace(['-','.'], '', $name); // concatenate hyphenated names, and remove dots from abbreviated names
 
-        $split = preg_split( "/[\s-]+/", $name); // divide according to spaces, hyphens
+        $split = preg_split( "/[\s]+/", $name); // divide according to spaces
         $split = array_map('self::latinise_string', $split); // remove accents
         $original_case_split = $split; // store in original case for later
         $split = array_map('strtolower', $split); // make lowercase
 
+        // if only one value, return it (defaults as lname)
 
-        // remove any abbreviations ('John C. Reilly' => 'John Reilly')
+        if(count($split) === 1)
+        {
+            $resp['lname'] = $split[0];
+            return $resp;
+        }
+
+
+        // remove any abbreviated middle/last names ('John C. Reilly' => 'John Reilly')
 
         foreach($split as $i => $s)
         {
-            if(strpos($s,'.') !== false)
+            if($i === 0) // allow abbreviated first name ('A Smith')
+                continue;
+
+            if($s === 'o') // have to allow for 'o', for Irish names
+                continue;
+
+            if(strlen($s) === 1)
                 unset($split[$i]);
         }
+
         $split = array_values($split);
 
 
 
-        // if only left with one value, return it
+        // Separate first and last name(s):
+        // The default behaviour is that the very last value *only* is the lname
+        // (all remaining parts are assumed to be the fname), unless
+        // the first part happens to be a patronymic/matronymic or nobiliary particle (in
+        // which case, all parts are lname). If such a particle is found, then
+        // that array key marks the beginning of the surname and we split fname and lname there
 
-        if(count($split) === 1)
-            return $split[0];
+        // We also check for vowel-ending Gaelic patronymics while we're at it, for use later
 
-        $ga_familials = ['mac','mc','ni','o','ui'];
-        if(!in_array($split[0], $ga_familials))
-            array_shift($split); // take out first name
-
-        if(count($split) === 1)
-            return $split[0];
-
-
-
-        // if no diacritics are used, we just cannot reliably tell the difference between
-        // a name spelled with a sheimhiú and an English variant of an Irish name, so just return
-
-        if(!$uses_diacritics)
-            return implode('', $split);
-
-
-
-        // check for vowel ending familials, and also store where in the name array that occurs.
-
-        $vowel_ending_ga_familials = ['ni','o','ui'];
-
-        $has_vowel_ending_ga_familial = false;
-        $familial_key = 0;
+        $patronymics = ['mac','mc','nic','ni','o','ui','af','von','zu','van','de','du','des','do','dos','da','das','dom','del','di','der'];
+        $particle_key = 0;
+        $has_particle = false;
+        $vowel_ending_ga_patronymics = ['ni','o','ui'];
+        $has_vowel_ending_ga_patronym = false;
         foreach($split as $i => $s)
         {
-            if(in_array($s, $vowel_ending_ga_familials))
-            {
-                $familial_key = $i;
-                $has_vowel_ending_ga_familial = true;
-            }
+            if(!in_array($s, $patronymics))
+                continue;
+
+            $particle_key = $i;
+            $has_particle = true;
+            $has_vowel_ending_ga_patronym = (in_array($s, $vowel_ending_ga_patronymics));
+            break;
+        }
+
+        if(!$has_particle) // doesn't have a particle, resort to default behaviour and return.
+        {
+            $x = count($split) - 1;
+
+            $resp['lname'] = $split[$x];
+            unset($split[$x]);
+            $resp['fname'] = implode('', $split);
+
+            return $resp;
+        }
+
+        $n = intval('-' . $particle_key);
+        $fnames = ($particle_key > 0) ? array_slice($split, 0, $n) : null;
+        $resp['fname'] = ($fnames === null) ? null : implode('', $fnames);
+        $split = ($particle_key > 0) ? array_slice($split, $particle_key) : $split;
+
+        // if only left with one lname value, or doesn't have a vowel-ending
+        // Irish patronym, return it
+
+        if( (count($split) === 1) || (!$has_vowel_ending_ga_patronym) )
+        {
+            $resp['lname'] = implode('', $split);
+            return $resp;
         }
 
 
 
-        // if no vowel ending ga_familial, just return
+        // Now only left with names that have multiple parts to their
+        // last name, AND that have a vowel-ending Irish patronym
 
-        if(!$has_vowel_ending_ga_familial)
-            return implode('', $split);
+        // check for possible sheimhiús, and remove them
 
-        // remove irrelevant values from name array (i.e. anything before familial), in-case there are any fnames left
-
-        if($familial_key > 0)
-            $split = array_slice($split, $familial_key);
-
-
-
-
-        // find those last names that may have sheimhiús, and remove them
-
-        $vowels = ['a','e','i','o','u'];
         $very_last_name_key = count($split) - 1;
         $very_last_name = $split[ $very_last_name_key ];
-
         $first_char = substr($very_last_name, 0, 1);
         $second_char = substr($very_last_name, 1, 1);
 
-        if( ($first_char !== 'h') && ($second_char !== 'h') ) // no sheimhiú at all
-            return implode('', $split);
-
-        if( ($first_char === 'h') && (in_array($second_char, $vowels)) ) // always a 'h' between vowels
+        if( ($first_char !== 'h') && ($second_char !== 'h') ) // no possible sheimhiú, so return
         {
-            // as a last safety, check first if 'h' was originally capitalised. If so, leave it.
+            $resp['lname'] = implode('', $split);
+            return $resp;
+        }
+
+        if($first_char === 'h')
+        {
+            // as a safety, check first if 'h' was originally capitalised. If so, leave it, just return
+
             $original_case_first_char = substr($original_case_split[ count($original_case_split) - 1 ], 0, 1);
             if($original_case_first_char === 'H')
-                return implode('', $split);
+            {
+                $resp['lname'] = implode('', $split);
+                return $resp;
+            }
 
-            // if not capitalised, it's a sheimhiu...
-            $split[$very_last_name_key] = substr($very_last_name, 1);
-            return implode('', $split);
+            if(in_array($second_char, ['a','e','i','o','u']))
+            {
+                // wasn't capitalised, and appears before a vowel - always a sheimhiú
+                // between vowels. This is as sure as we can be here.
+
+                $split[$very_last_name_key] = substr($very_last_name, 1);
+                $resp['lname'] = implode('', $split);
+                return $resp;
+            }
         }
 
         if($second_char === 'h')
@@ -185,9 +219,12 @@ class Helper
             // who spells in Irish, and with a 'h' as a second character - it's a sheimhiú
 
             $split[$very_last_name_key] = substr($very_last_name, 0,1) . substr($very_last_name,2);
-            return implode('', $split);
+            $resp['lname'] = implode('', $split);
+            return $resp;
         }
 
-        return implode('', $split);
+        // safety return
+        $resp['lname'] = implode('', $split);
+        return $resp;
     }
 }
