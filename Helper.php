@@ -76,12 +76,13 @@ class Helper
         return $string;
     }
 
-    static function normalise_name($name)
+    static function normalise_name($name, $remove_abbr = false, $remove_patronymics = false)
     {
         $resp = [
             'fname' => null,
             'lname' => null
         ];
+
 
         $name = trim($name);
 
@@ -105,21 +106,21 @@ class Helper
         }
 
 
-        // remove any abbreviated middle/last names ('John C. Reilly' => 'John Reilly')
-
-        foreach($split as $i => $s)
+        if($remove_abbr)
         {
-            if($i === 0) // allow abbreviated first name ('A Smith')
-                continue;
+            // remove any abbreviated middle/last names ('John C. Reilly' => 'John Reilly')
 
-            if($s === 'o') // have to allow for 'o', for Irish names
-                continue;
+            foreach($split as $i => $s)
+            {
+                if($s === 'o') // have to allow for 'o', for Irish names
+                    continue;
 
-            if(strlen($s) === 1)
-                unset($split[$i]);
+                if(strlen($s) === 1)
+                    unset($split[$i]);
+            }
+
+            $split = array_values($split);
         }
-
-        $split = array_values($split);
 
 
 
@@ -170,6 +171,9 @@ class Helper
 
         if( (count($split) === 1) || (!$has_vowel_ending_ga_patronym) )
         {
+            if($remove_patronymics)
+                $split = array_slice($split, 1);
+
             $resp['lname'] = implode('', $split);
             return $resp;
         }
@@ -188,6 +192,9 @@ class Helper
 
         if( ($first_char !== 'h') && ($second_char !== 'h') ) // no possible sheimhiú, so return
         {
+            if($remove_patronymics)
+                $split = array_slice($split, 1);
+
             $resp['lname'] = implode('', $split);
             return $resp;
         }
@@ -199,6 +206,9 @@ class Helper
             $original_case_first_char = substr($original_case_split[ count($original_case_split) - 1 ], 0, 1);
             if($original_case_first_char === 'H')
             {
+                if($remove_patronymics)
+                    $split = array_slice($split, 1);
+
                 $resp['lname'] = implode('', $split);
                 return $resp;
             }
@@ -209,6 +219,10 @@ class Helper
                 // between vowels. This is as sure as we can be here.
 
                 $split[$very_last_name_key] = substr($very_last_name, 1);
+
+                if($remove_patronymics)
+                    $split = array_slice($split, 1);
+
                 $resp['lname'] = implode('', $split);
                 return $resp;
             }
@@ -220,11 +234,19 @@ class Helper
             // who spells in Irish, and with a 'h' as a second character - it's a sheimhiú
 
             $split[$very_last_name_key] = substr($very_last_name, 0,1) . substr($very_last_name,2);
+
+            if($remove_patronymics)
+                $split = array_slice($split, 1);
+
             $resp['lname'] = implode('', $split);
             return $resp;
         }
 
         // safety return
+
+        if($remove_patronymics)
+            $split = array_slice($split, 1);
+
         $resp['lname'] = implode('', $split);
         return $resp;
     }

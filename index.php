@@ -10,23 +10,12 @@ require_once 'Helper.php';
 
 $names = [
     'Rióna Ní Fhrighil',
-    'Lesa Ní Mhunghaile',
     'Liam Ó hAisibéil',
     'Lillis Ó Laoire',
-    'Deirdre Ní Chonghaile',
-    'Pádraig Ó Macháin',
-    'Áine Ní Ghadhra',
-    'Gobnait Ní Loingsigh',
-    'Marian Ní Shúilliobháin',
-    'Claire Ní Mhuirthile',
-    'Seán Ó Laoi',
-    'Brian Ó Donnchadha',
-    'Aoife Ní Shéaghdha',
     'John C. Reilly',
-    'Joe O Heaney',
     'Joe Ó Heaney',
     'Otto Von Bismark',
-    'Derbhla O Shaughnessy-Hennessy',
+    'Derbhla O Shaughnessy - Hennessy',
     'Johan',
     'Mac Dowell'
 ];
