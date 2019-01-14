@@ -3,14 +3,14 @@ Remove diacritics (and séimhiús (lowercase 'h' before or after initial letter)
 
 Has option to remove abbreviated name values (e.g. 'John C. Reilly' => \['john','reilly'\]), and to remove patronymics for gender-neutral name sorting (e.g. 'Éamonn Mac Lochlainn' => \['eamonn','lochlainn'\], 'Méabh Nic Lochlainn' => \['meabh','lochlainn'\]).
 
-##Usage
+## Usage  
 Feed the function a person's full name, get back an array containing their first name(s) and last name(s), stripped of any diacritics, spaces, hyphens, and séimhiús.
 
     $normalised_name = Helper::normalise_name($input, [$remove_abbr = false, $remove_patronymics = false, $preferred_key = 'fname']);
 
-##Examples
+## Examples
 
-###Default:
+### Default:
 
     Helper::normalise_name('Lillis Ó Laoire');
     Helper::normalise_name('Rióna Ní Fhrighil');
@@ -26,7 +26,7 @@ Feed the function a person's full name, get back an array containing their first
         [lname] => nifrighil
     )
 
-###Handling Abbreviations:
+### Handling Abbreviations:
 
     Helper::normalise_name('John C. Reilly');
     // results in
@@ -50,7 +50,7 @@ Feed the function a person's full name, get back an array containing their first
         [lname] => byrne
     )
 
-###Handling Patronymics:
+### Handling Patronymics:
 
     Helper::normalise_name('Otto Von Bismark');
     // results in
@@ -75,7 +75,7 @@ Feed the function a person's full name, get back an array containing their first
         [lname] => bismark
     )
 
-###Handling single-value names
+### Handling single-value names
 
     Helper::normalise_name('John');
     // results in
