@@ -76,7 +76,25 @@ class Helper
         return $string;
     }
 
-    static function normalise_name($name, $remove_abbr = false, $remove_patronymics = false)
+    /**
+     *
+     * Separate first and last name(s).
+     * The default behaviour is that the very last value *only* is the lname
+     * (all remaining parts are assumed to be the fname), unless
+     * the first value happens to be a patronymic/matronymic or nobiliary particle.
+     * If such a particle is found, then that array key marks the beginning of the
+     * lname and we split fname and lname there
+     *
+     * Abbreviated middle name values are added to the fname by default, unless
+     * they are 'o', in which case they are added to the lname.
+     *
+     * @param $name
+     * @param bool $remove_abbr - remove abbreviated values (strlen == 1, or ended with a dot)
+     * @param bool $remove_patronymics
+     * @param $preferred_key - set which key to use (fname or lname) when a single value (e.g. 'John') is submitted
+     * @return array
+     */
+    static function normalise_name($name, $remove_abbr = false, $remove_patronymics = false, $preferred_key = 'fname')
     {
         $resp = [
             'fname' => null,
@@ -90,7 +108,7 @@ class Helper
         $name = str_replace('\'', ' ', $name); // replace remaining apostrophes with spaces
         $name = preg_replace('!\s+!', ' ', $name); // replace multiple spaces with single spaces
         $name = str_replace([' -','- '], '-', $name); // replace spaced hyphens with hyphens
-        $name = str_replace(['-','.'], '', $name); // concatenate hyphenated names, and remove dots from abbreviated names
+        $name = str_replace('-', '', $name); // concatenate hyphenated names
 
         $split = preg_split( "/[\s]+/", $name); // divide according to spaces
         $split = array_map('self::latinise_string', $split); // remove accents
@@ -101,7 +119,7 @@ class Helper
 
         if(count($split) === 1)
         {
-            $resp['lname'] = $split[0];
+            $resp[$preferred_key] = $split[0];
             return $resp;
         }
 
@@ -115,8 +133,23 @@ class Helper
                 if($s === 'o') // have to allow for 'o', for Irish names
                     continue;
 
-                if(strlen($s) === 1)
+                if(strpos($s,'.') !== false)
+                {
                     unset($split[$i]);
+
+                    if($i === 0)
+                        array_unshift($split, null);
+
+                    continue;
+                }
+
+                if(strlen($s) === 1)
+                {
+                    unset($split[$i]);
+
+                    if($i === 0)
+                        array_unshift($split, null);
+                }
             }
 
             $split = array_values($split);
@@ -124,28 +157,26 @@ class Helper
 
 
 
-        // Separate first and last name(s):
-        // The default behaviour is that the very last value *only* is the lname
-        // (all remaining parts are assumed to be the fname), unless
-        // the first part happens to be a patronymic/matronymic or nobiliary particle (in
-        // which case, all parts are lname). If such a particle is found, then
-        // that array key marks the beginning of the surname and we split fname and lname there
 
-        // We also check for vowel-ending Gaelic patronymics while we're at it, for use later
+        // Check for patronymics, and mark position.
+        // We also check for vowel-ending Irish patronymics while
+        // we're at it, for use later, as well as removing dots (abbr checkpoint passed).
 
         $patronymics = ['mac','mc','nic','ni','o','ui','af','von','zu','van','de','du','des','do','dos','da','das','dom','del','di','der'];
         $particle_key = 0;
         $has_particle = false;
-        $vowel_ending_ga_patronymics = ['ni','o','ui'];
-        $has_vowel_ending_ga_patronym = false;
+        $vowel_ending_ir_patronymics = ['ni','o','ui'];
+        $has_vowel_ending_ir_patronym = false;
         foreach($split as $i => $s)
         {
+            $split[$i] = str_replace('.', '', $s);
+
             if(!in_array($s, $patronymics))
                 continue;
 
             $particle_key = $i;
             $has_particle = true;
-            $has_vowel_ending_ga_patronym = (in_array($s, $vowel_ending_ga_patronymics));
+            $has_vowel_ending_ir_patronym = (in_array($s, $vowel_ending_ir_patronymics));
             break;
         }
 
@@ -169,7 +200,7 @@ class Helper
         // if only left with one lname value, or doesn't have a vowel-ending
         // Irish patronym, return it
 
-        if( (count($split) === 1) || (!$has_vowel_ending_ga_patronym) )
+        if( (count($split) === 1) || (!$has_vowel_ending_ir_patronym) )
         {
             if($remove_patronymics)
                 $split = array_slice($split, 1);

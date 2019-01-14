@@ -9,12 +9,13 @@ require_once 'Helper.php';
 
 
 $names = [
+    'Lillis Ó Laoire',
     'Rióna Ní Fhrighil',
     'Liam Ó hAisibéil',
-    'Lillis Ó Laoire',
-    'John C. Reilly',
-    'Joe Ó Heaney',
+    'Joe O Heaney',
     'Otto Von Bismark',
+    'John C Reilly',
+    'Thos. Byrne',
     'Derbhla O Shaughnessy - Hennessy',
     'Johan',
     'Mac Dowell'
@@ -22,10 +23,8 @@ $names = [
 
 foreach($names as $n)
 {
-    $indexed_name = Helper::normalise_name($n);
-    $arr = [];
-    $arr[] = $n;
-    $arr[] = $indexed_name;
-    Helper::show($arr);
+    $indexed_name = Helper::normalise_name($n, true, false, 'fname');
+    echo $n;
+    Helper::show($indexed_name);
 }
 
