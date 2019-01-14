@@ -159,9 +159,10 @@ class Helper
             return $resp;
         }
 
-        $n = intval('-' . $particle_key);
+        $n = intval('-' . ($particle_key + 1));
         $fnames = ($particle_key > 0) ? array_slice($split, 0, $n) : null;
         $resp['fname'] = ($fnames === null) ? null : implode('', $fnames);
+
         $split = ($particle_key > 0) ? array_slice($split, $particle_key) : $split;
 
         // if only left with one lname value, or doesn't have a vowel-ending
