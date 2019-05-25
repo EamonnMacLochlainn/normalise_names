@@ -1,9 +1,14 @@
 <?php
 /**
  * Created by PhpStorm.
- * Date: 12/01/2019
- * Time: 16:04
+ * User: Eamonn
+ * Date: 29/12/2018
+ * Time: 14:21
  */
+
+namespace FT;
+
+use Transliterator;
 
 class Helper
 {
@@ -31,254 +36,160 @@ class Helper
         if(empty($string))
             return null;
 
-        $table = [
-            'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'a', 'å'=>'a', 'ă'=>'a', 'ā'=>'a', 'ą'=>'a', 'æ'=>'a', 'ǽ'=>'a',
-            'Þ'=>'b', 'þ'=>'b', 'ß'=>'ss',
-            'ç'=>'c', 'č'=>'c', 'ć'=>'c', 'ĉ'=>'c', 'ċ'=>'c',
-            'đ'=>'dj', 'ď'=>'d',
-            'è'=>'e', 'é'=>'e', 'ê'=>'e', 'ë'=>'e', 'ĕ'=>'e', 'ē'=>'e', 'ę'=>'e', 'ė'=>'e',
-            'ĝ'=>'g', 'ğ'=>'g', 'ġ'=>'g', 'ģ'=>'g',
-            'ĥ'=>'h', 'ħ'=>'h',
-            'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'į'=>'i', 'ĩ'=>'i', 'ī'=>'i', 'ĭ'=>'i', 'ı'=>'i',
-            'ĵ'=>'j',
-            'ķ'=>'k', 'ĸ'=>'k',
-            'ĺ'=>'l', 'ļ'=>'l', 'ľ'=>'l', 'ŀ'=>'l', 'ł'=>'l',
-            'ñ'=>'n', 'ń'=>'n', 'ň'=>'n', 'ņ'=>'n', 'ŋ'=>'n', 'ŉ'=>'n',
-            'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o', 'ö'=>'o', 'ø'=>'o', 'ō'=>'o', 'ŏ'=>'o', 'ő'=>'o', 'œ'=>'o', 'ð'=>'o',
-            'ŕ'=>'r', 'ř'=>'r', 'ŗ'=>'r',
-            'š'=>'s', 'ŝ'=>'s', 'ś'=>'s', 'ş'=>'s',
-            'ŧ'=>'t', 'ţ'=>'t', 'ť'=>'t',
-            'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ü'=>'u', 'ũ'=>'u', 'ū'=>'u', 'ŭ'=>'u', 'ů'=>'u', 'ű'=>'u', 'ų'=>'u',
-            'ŵ'=>'w', 'ẁ'=>'w', 'ẃ'=>'w', 'ẅ'=>'w',
-            'ý'=>'y', 'ÿ'=>'y', 'ŷ'=>'y',
-            'ž'=>'z', 'ź'=>'z', 'ż'=>'z',
-            'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Ă'=>'A', 'Ā'=>'A', 'Ą'=>'A', 'Æ'=>'A', 'Ǽ'=>'A',
-            'Ç'=>'C', 'Č'=>'C', 'Ć'=>'C', 'Ĉ'=>'C', 'Ċ'=>'C',
-            'Đ'=>'DJ', 'Ď'=>'D',
-            'È'=>'E', 'É'=>'E', 'Ê'=>'E', 'Ë'=>'E', 'Ĕ'=>'E', 'Ē'=>'E', 'Ę'=>'E', 'Ė'=>'E',
-            'Ĝ'=>'G', 'Ğ'=>'G', 'Ġ'=>'G', 'Ģ'=>'G',
-            'Ĥ'=>'H', 'Ħ'=>'H',
-            'Ì'=>'I', 'Í'=>'I', 'Î'=>'I', 'Ï'=>'I', 'Į'=>'I', 'Ĩ'=>'I', 'Ī'=>'I', 'Ĭ'=>'I',
-            'Ĵ'=>'J',
-            'Ķ'=>'K',
-            'Ĺ'=>'L', 'Ļ'=>'L', 'Ľ'=>'L', 'Ŀ'=>'L', 'Ł'=>'L',
-            'Ñ'=>'N', 'Ń'=>'N', 'Ň'=>'N', 'Ņ'=>'N', 'Ŋ'=>'N',
-            'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ō'=>'O', 'Ŏ'=>'O', 'Ő'=>'O', 'Œ'=>'O', 'Ð'=>'O',
-            'Ŕ'=>'R', 'Ř'=>'R', 'Ŗ'=>'R',
-            'Š'=>'S', 'Ŝ'=>'S', 'Ś'=>'S', 'Ş'=>'S',
-            'Ŧ'=>'T', 'Ţ'=>'T', 'Ť'=>'T',
-            'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'Ü'=>'U', 'Ũ'=>'U', 'Ū'=>'U', 'Ŭ'=>'U', 'Ů'=>'U', 'Ű'=>'U', 'Ų'=>'U',
-            'Ŵ'=>'W', 'Ẁ'=>'W', 'Ẃ'=>'W', 'Ẅ'=>'W',
-            'Ý'=>'Y', 'Ÿ'=>'Y', 'Ŷ'=>'Y',
-            'Ž'=>'Z', 'Ź'=>'Z', 'Ż'=>'Z'
-        ];
-        $string = strtr($string, $table);
-        return $string;
+        $transliterator = Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: Lower(); :: NFC;', Transliterator::FORWARD);
+        return $transliterator->transliterate($string);
     }
 
-    /**
-     *
-     * Separate first and last name(s).
-     * The default behaviour is that the very last value *only* is the lname
-     * (all remaining parts are assumed to be the fname), unless
-     * the first value happens to be a patronymic/matronymic or nobiliary particle.
-     * If such a particle is found, then that array key marks the beginning of the
-     * lname and we split fname and lname there
-     *
-     * Abbreviated middle name values are added to the fname by default, unless
-     * they are 'o', in which case they are added to the lname.
-     *
-     * @param $name
-     * @param bool $remove_abbr - remove abbreviated values (strlen == 1, or ended with a dot)
-     * @param bool $remove_patronymics
-     * @param $preferred_key - set which key to use (fname or lname) when a single value (e.g. 'John') is submitted
-     * @return array
-     */
-    static function normalise_name($name, $remove_abbr = false, $remove_patronymics = false, $preferred_key = 'fname')
+    static function normalise_name($name, $remove_sheimhu = false)
     {
         $resp = [
             'fname' => null,
-            'lname' => null
+            'lname' => null,
+            'normalised_lname' => null,
+            'patronym' => null
         ];
 
 
         $name = trim($name);
+        if (empty($name))
+            return $resp;
 
-        $name = str_replace('d\'', 'd', $name); // concatenate Latin abbreviated particle
-        $name = str_replace('\'', ' ', $name); // replace remaining apostrophes with spaces
         $name = preg_replace('!\s+!', ' ', $name); // replace multiple spaces with single spaces
-        $name = str_replace([' -','- '], '-', $name); // replace spaced hyphens with hyphens
-        $name = str_replace('-', '', $name); // concatenate hyphenated names
+        $name = str_replace([' -', '- '], '-', $name); // replace spaced hyphens with hyphens
 
-        $split = preg_split( "/[\s]+/", $name); // divide according to spaces
-        $split = array_map('self::latinise_string', $split); // remove accents
-        $original_case_split = $split; // store in original case for later
-        $split = array_map('strtolower', $split); // make lowercase
 
-        // if only one value, return it (defaults as lname)
+        // split on spaces and assign first and last name values
 
-        if(count($split) === 1)
+        $split = explode(' ', $name);
+        $num_parts = count($split);
+
+        $first = array_shift($split);
+        $last = null;
+        if ($num_parts > 2)
         {
-            $resp[$preferred_key] = $split[0];
+            if (strlen($split[0]) == 1)
+            {
+                $mid = array_shift($split);
+                $first .= ' ' . $mid;
+            }
+        }
+        $last = (!empty($split)) ? implode(' ', $split) : null;
+
+
+        // if no 'last' value, assume all is first name and return
+
+        if ($last === null)
+        {
+            $first_lwr = strtolower($first);
+            $first_lwr = self::latinise_string($first_lwr); // remove accents
+            $first_lwr = str_replace(' ', '', $first_lwr);
+
+            $resp['fname'] = $first;
+            $resp['lname'] = null;
+            $resp['normalised_lname'] = $first_lwr;
+            $resp['patronym'] = null;
+
             return $resp;
         }
 
 
-        if($remove_abbr)
+        // check for and remove patronymics
+
+        $patronymics = ['mac', 'mc', 'nic', 'ni', 'o', 'ui', 'af', 'von', 'zu', 'van', 'd\'', 'de', 'du', 'des', 'do', 'dos', 'da', 'das', 'dom', 'del', 'di', 'der'];
+
+        $last_lwr = strtolower($last);
+        $last_lwr = self::latinise_string($last_lwr); // remove accents
+
+        $patronym = null;
+        $sans_patronym = null;
+        foreach ($patronymics as $p)
         {
-            // remove any abbreviated middle/last names ('John C. Reilly' => 'John Reilly')
+            $p_len = strlen($p);
 
-            foreach($split as $i => $s)
-            {
-                if($s === 'o') // have to allow for 'o', for Irish names
-                    continue;
-
-                if(strpos($s,'.') !== false)
-                {
-                    unset($split[$i]);
-
-                    if($i === 0)
-                        array_unshift($split, null);
-
-                    continue;
-                }
-
-                if(strlen($s) === 1)
-                {
-                    unset($split[$i]);
-
-                    if($i === 0)
-                        array_unshift($split, null);
-                }
-            }
-
-            $split = array_values($split);
-        }
-
-
-
-
-        // Check for patronymics, and mark position.
-        // We also check for vowel-ending Irish patronymics while
-        // we're at it, for use later, as well as removing dots (abbr checkpoint passed).
-
-        $patronymics = ['mac','mc','nic','ni','o','ui','af','von','zu','van','de','du','des','do','dos','da','das','dom','del','di','der'];
-        $particle_key = 0;
-        $has_particle = false;
-        $vowel_ending_ir_patronymics = ['ni','o','ui'];
-        $has_vowel_ending_ir_patronym = false;
-        foreach($split as $i => $s)
-        {
-            $split[$i] = str_replace('.', '', $s);
-
-            if(!in_array($s, $patronymics))
+            if (substr($last_lwr, 0, $p_len) !== $p)
                 continue;
 
-            $particle_key = $i;
-            $has_particle = true;
-            $has_vowel_ending_ir_patronym = (in_array($s, $vowel_ending_ir_patronymics));
+            $char_after_p = substr($last, $p_len, 1);
+
+            if(!preg_match("/^[a-zA-Z]$/", $char_after_p)) // if followed by a space or apostrophe, etc, it is a patronym
+            {
+                $patronym = $p;
+                $sans_patronym = substr($last, $p_len + 1);
+            }
+            else
+            {
+                // remove 'mc' regardless
+                if ($p == 'mc')
+                {
+                    $patronym = $p;
+                    $sans_patronym = substr($last, $p_len);
+                }
+                else
+                {
+                    if (ctype_lower($char_after_p))
+                        $sans_patronym = $last;
+                    else
+                    {
+                        $patronym = $p;
+                        $sans_patronym = substr($last, $p_len);
+                    }
+                }
+            }
             break;
         }
 
-        if(!$has_particle) // doesn't have a particle, resort to default behaviour and return.
-        {
-            $x = count($split) - 1;
+        $sans_patronym = ($sans_patronym == null) ? $last : str_replace(' ', '', $sans_patronym);
+        $sans_patronymic_lwr = strtolower($sans_patronym);
 
-            $resp['lname'] = $split[$x];
-            unset($split[$x]);
-            $resp['fname'] = implode('', $split);
 
+        $ga_patronyms = ['mac', 'mc', 'nic', 'ni', 'o', 'ui'];
+        $has_ga_patronym = ($patronym === null) ? false : (in_array($patronym, $ga_patronyms));
+
+        $resp = [
+            'fname' => $first,
+            'lname' => $last,
+            'normalised_lname' => self::latinise_string($sans_patronymic_lwr),
+            'patronym' => $patronym
+        ];
+
+        if ((!$has_ga_patronym) || (!$remove_sheimhu))
             return $resp;
-        }
 
-        $n = intval('-' . ($particle_key + 1));
-        $fnames = ($particle_key > 0) ? array_slice($split, 0, $n) : null;
-        $resp['fname'] = ($fnames === null) ? null : implode('', $fnames);
 
-        $split = ($particle_key > 0) ? array_slice($split, $particle_key) : $split;
+        // we can check for shéimhús now
 
-        // if only left with one lname value, or doesn't have a vowel-ending
-        // Irish patronym, return it
+        $first_char = substr($sans_patronym, 0, 1);
+        $second_char = substr($sans_patronym, 1, 1);
 
-        if( (count($split) === 1) || (!$has_vowel_ending_ir_patronym) )
-        {
-            if($remove_patronymics)
-                $split = array_slice($split, 1);
+        $first_char_lwr = strtolower($first_char);
+        $second_char_lwr = strtolower($second_char);
 
-            $resp['lname'] = implode('', $split);
+        if (($first_char_lwr !== 'h') && ($second_char_lwr !== 'h')) // no 'h' as first or second char
             return $resp;
-        }
 
-
-
-        // Now only left with names that have multiple parts to their
-        // last name, AND that have a vowel-ending Irish patronym
-
-        // check for possible sheimhiús, and remove them
-
-        $very_last_name_key = count($split) - 1;
-        $very_last_name = $split[ $very_last_name_key ];
-        $first_char = substr($very_last_name, 0, 1);
-        $second_char = substr($very_last_name, 1, 1);
-
-        if( ($first_char !== 'h') && ($second_char !== 'h') ) // no possible sheimhiú, so return
-        {
-            if($remove_patronymics)
-                $split = array_slice($split, 1);
-
-            $resp['lname'] = implode('', $split);
+        if (($first_char !== 'h') && ($second_char !== 'h')) // no lowercase 'h' as first or second char
             return $resp;
-        }
 
-        if($first_char === 'h')
+        if ((!ctype_lower($first_char)) && ($first_char_lwr == 'h')) // 'h' is first, but not lowercase
+            return $resp;
+
+        if (($first_char_lwr == 'h') && (ctype_lower($second_char))) // 'h' is first, but followed by a lowercase letter
+            return $resp;
+
+
+        if ($second_char == 'h')
         {
-            // as a safety, check first if 'h' was originally capitalised. If so, leave it, just return
-
-            $original_case_first_char = substr($original_case_split[ count($original_case_split) - 1 ], 0, 1);
-            if($original_case_first_char === 'H')
-            {
-                if($remove_patronymics)
-                    $split = array_slice($split, 1);
-
-                $resp['lname'] = implode('', $split);
+            if((strpbrk($first . $last, "áéíóúÁÉÍÓÚ")) === false) // name does not use diacritics, cannot proceed safely, just return
                 return $resp;
-            }
 
-            if(in_array($second_char, ['a','e','i','o','u']))
-            {
-                // wasn't capitalised, and appears before a vowel - always a sheimhiú
-                // between vowels. This is as sure as we can be here.
-
-                $split[$very_last_name_key] = substr($very_last_name, 1);
-
-                if($remove_patronymics)
-                    $split = array_slice($split, 1);
-
-                $resp['lname'] = implode('', $split);
-                return $resp;
-            }
+            $resp['normalised_lname'] = self::latinise_string($first_char_lwr . substr($sans_patronymic_lwr, 2)); // remove (90% likely) shéimhú
         }
-
-        if($second_char === 'h')
+        else
         {
-            // at this point, we are left with someone with an Irish familial, with a vowel ending familial,
-            // who spells in Irish, and with a 'h' as a second character - it's a sheimhiú
-
-            $split[$very_last_name_key] = substr($very_last_name, 0,1) . substr($very_last_name,2);
-
-            if($remove_patronymics)
-                $split = array_slice($split, 1);
-
-            $resp['lname'] = implode('', $split);
-            return $resp;
+            if(in_array($second_char_lwr, ['a','e','i','o','u','á','é','í','ó','ú']))
+                $resp['normalised_lname'] = self::latinise_string(substr($sans_patronymic_lwr, 1));
         }
 
-        // safety return
-
-        if($remove_patronymics)
-            $split = array_slice($split, 1);
-
-        $resp['lname'] = implode('', $split);
         return $resp;
     }
 }

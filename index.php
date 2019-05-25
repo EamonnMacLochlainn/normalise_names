@@ -23,7 +23,7 @@ $names = [
 
 foreach($names as $n)
 {
-    $indexed_name = Helper::normalise_name($n, true, false, 'fname');
+    $indexed_name = Helper::normalise_name($n, true);
     echo $n;
     Helper::show($indexed_name);
 }
